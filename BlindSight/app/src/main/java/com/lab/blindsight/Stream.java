@@ -1,17 +1,21 @@
 package com.lab.blindsight;
 
+import android.app.ActionBar;
+import android.content.Intent;
 import android.hardware.Camera;
 
+import android.os.Build;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
-import com.lab.blindsight.Audio.AudioPlayer;
-
-public class Stream extends AppCompatActivity {
+import com.lab.blindsight.Audio.AudioPlayer;public class Stream extends AppCompatActivity {
 
     private Camera camera;
     private CameraView cameraView = null;
@@ -71,6 +75,16 @@ public class Stream extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Window window = this.getWindow();
+
+        View decorView = window.getDecorView();
+
+        int systemStyleFlag = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                View.SYSTEM_UI_FLAG_FULLSCREEN;
+
+        decorView.setSystemUiVisibility(systemStyleFlag);
+
         setContentView(R.layout.activity_stream);
         double[][] t = new double[][] {{1,1},{1,1}};
         AudioPlayer.play(t, 10000);

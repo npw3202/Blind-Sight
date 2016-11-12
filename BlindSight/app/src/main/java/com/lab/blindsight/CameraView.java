@@ -8,7 +8,6 @@ import android.hardware.Camera;
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-
 import java.io.IOException;
 
 import org.opencv.android.OpenCVLoader;
@@ -17,7 +16,7 @@ import org.opencv.android.OpenCVLoader;
  * Created by lab on 11/12/16.
  */
 
-public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
+public class CameraView extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
 
     private SurfaceHolder holder;
 
@@ -105,4 +104,8 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
 
     }
 
+    @Override
+    public void onPreviewFrame(byte[] bytes, Camera camera) {
+
+    }
 }

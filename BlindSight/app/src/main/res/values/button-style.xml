@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <style name="TestButton" parent="Theme.AppCompat.Light">
+    <item name="colorControlHighlight">@color/indigo</item>
+    <item name="colorButtonNormal">@color/turquoise</item>
+  </style>
+</resources>

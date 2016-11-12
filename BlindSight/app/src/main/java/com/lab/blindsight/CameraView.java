@@ -33,10 +33,11 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
-        //when the surface is created, we can set the camera to draw images in this surfaceholder
+        //when the surface is created, we can set the camera to draw images in this surface holder
         try {
             camera.setPreviewDisplay(surfaceHolder);
             camera.startPreview();
+
         } catch (IOException e) {
             Log.d("ERROR", "Camera error on surfaceCreated " + e.getMessage());
         }

@@ -10,6 +10,9 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 import java.io.IOException;
 
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 
 /**
@@ -42,17 +45,6 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         this.holder.addCallback(this);
     }
 
-    static final private int NUM_BUFFERS = 5;
-
-    private void setupCameraCallback(int bufferSize) {
-
-        camera.setPreviewCallbackWithBuffer(this);
-
-        for (int i = 0; i <= NUM_BUFFERS; ++i) {
-            byte[] cameraBuffer = new byte[bufferSize];
-            camera.addCallbackBuffer(cameraBuffer);
-        }
-    }
 
     @Override
     public void surfaceCreated(SurfaceHolder surfaceHolder) {
@@ -60,13 +52,11 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
         try {
             camera.setPreviewDisplay(surfaceHolder);
 
-            Camera.Size setSize = camera.getParameters().getPreviewSize();
+//            Camera.Size setSize = camera.getParameters().getPreviewSize();
 
-            int bufferSize = setSize.width * setSize.height
-                    * ImageFormat.getBitsPerPixel(
-                    camera.getParameters().getPreviewFormat()) / 8;
-
-            setupCameraCallback(bufferSize);//this is what you are looking for
+//            int bufferSize = setSize.width * setSize.height
+//                    * ImageFormat.getBitsPerPixel(
+//                    camera.getParameters().getPreviewFormat()) / 8;
 
             camera.startPreview();
 

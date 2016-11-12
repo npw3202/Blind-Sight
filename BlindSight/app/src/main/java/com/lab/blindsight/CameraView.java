@@ -2,6 +2,7 @@ package com.lab.blindsight;
 
 import android.content.Context;
 
+import android.graphics.ImageFormat;
 import android.hardware.Camera;
 
 import android.util.Log;
@@ -9,6 +10,8 @@ import android.view.SurfaceHolder;
 import android.view.SurfaceView;
 
 import java.io.IOException;
+
+import org.opencv.android.OpenCVLoader;
 
 /**
  * Created by lab on 11/12/16.
@@ -20,6 +23,16 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
 
     private Camera camera;
 
+    private static final String TAG = "CameraView";
+
+    static {
+        if (!OpenCVLoader.initDebug()) {
+            Log.d(TAG, "OpenCV not loaded");
+        } else {
+            Log.d(TAG, "OpenCV loaded");
+        }
+    }
+
     public CameraView(Context context, Camera camera) {
         super(context);
 
@@ -28,7 +41,18 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         //get the holder and set this class as the callback, so we can get camera data here
         this.holder = getHolder();
         this.holder.addCallback(this);
+    }
 
+    static final private int NUM_BUFFERS = 5;
+
+    private void setupCameraCallback(int bufferSize) {
+
+        camera.setPreviewCallbackWithBuffer(this);
+
+        for (int i = 0; i <= NUM_BUFFERS; ++i) {
+            byte[] cameraBuffer = new byte[bufferSize];
+            camera.addCallbackBuffer(cameraBuffer);
+        }
     }
 
     @Override
@@ -36,12 +60,22 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
         //when the surface is created, we can set the camera to draw images in this surface holder
         try {
             camera.setPreviewDisplay(surfaceHolder);
+
+            Camera.Size setSize = camera.getParameters().getPreviewSize();
+
+            int bufferSize = setSize.width * setSize.height
+                    * ImageFormat.getBitsPerPixel(
+                    camera.getParameters().getPreviewFormat()) / 8;
+
+            setupCameraCallback(bufferSize);//this is what you are looking for
+
             camera.startPreview();
 
         } catch (IOException e) {
             Log.d("ERROR", "Camera error on surfaceCreated " + e.getMessage());
         }
     }
+
 
     @Override
     public void surfaceChanged(SurfaceHolder surfaceHolder, int i, int i2, int i3) {
@@ -65,8 +99,10 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
 
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
-        this.camera.stopPreview();
-        this.camera.release();
+        camera.setPreviewCallback(null);
+        camera.stopPreview();
+        camera.release();
+
     }
 
 }

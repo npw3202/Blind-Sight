@@ -15,6 +15,7 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 
+
 public class Stream extends AppCompatActivity {
 
     private Camera camera;

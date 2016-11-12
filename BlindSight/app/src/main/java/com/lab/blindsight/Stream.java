@@ -19,6 +19,7 @@ import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
+import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 
@@ -92,7 +93,9 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
                     Display display = getWindowManager().getDefaultDisplay();
                     Point size = new Point();
                     display.getSize(size);
+
                     int width = size.x;
+
                     int height = size.y;
 
                     mOpenCvCameraView.setMinimumHeight(height);
@@ -130,21 +133,27 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
     }
 
     int threshold1 = 70;
+
     int threshold2 = 100;
+
+    final int cannySize = 128;
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
-        mRgba = inputFrame.rgba();
+        Mat inputGrayscale = inputFrame.gray();
         // Rotate mRgba 90 degrees
-
         if (cannyMat == null) {
             cannyMat = new Mat();
         }
 
-        Imgproc.Canny(mRgba, cannyMat, threshold1, threshold2);
+        Imgproc.Canny(inputGrayscale, cannyMat, threshold1, threshold2);
+
+        Mat processingMat = new Mat();
+
+        Imgproc.resize(cannyMat, processingMat, new Size(cannySize, cannySize));
 
         if (!edgeMode) {
-            return mRgba;
+            return inputFrame.rgba();
         } else {
             return cannyMat;
         }

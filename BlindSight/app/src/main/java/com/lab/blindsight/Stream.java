@@ -12,6 +12,8 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.Switch;
 
+import com.lab.blindsight.Audio.AudioPlayer;
+
 import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
@@ -21,7 +23,6 @@ import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
 import org.opencv.imgproc.Imgproc;
 public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
-    private final String TAG = "debug";
     private static final String TAG = "StreamView";
 
     private CameraBridgeViewBase mOpenCvCameraView;
@@ -33,7 +34,6 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
     @Override
     protected void onStart() {
         super.onStart();
-        Log.i(TAG, "onStart");
     }
 
     Mat mRgba;
@@ -42,36 +42,6 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
     Mat mRgbaT;
 
     boolean edgeMode = false;
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-        Log.i(TAG, "onResume");
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-        Log.i(TAG, "onPause");
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-        Log.i(TAG, "onStop");
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-        Log.i(TAG, "onRestart");
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        Log.i(TAG, "onDestroy");
-    }
 
     @Override
     protected void onSaveInstanceState(Bundle outState) {
@@ -101,7 +71,6 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
         setContentView(R.layout.activity_stream);
         mOpenCvCameraView = (JavaCameraView) findViewById(R.id.OpenCVCam);        double[][] t = new double[][] {{1,1},{1,1}};
-        AudioPlayer.play(t, 10000);
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
 
         mOpenCvCameraView.setCvCameraViewListener(this);
@@ -186,7 +155,14 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
         }
 
         Imgproc.Canny(mRgba, cannyMat, threshold1, threshold2);
-
+        double result[][] = new double[cannyMat.rows()][cannyMat.cols()];
+        for(int r = 0; r < cannyMat.rows(); r++) {
+            for (int c = 0; c < cannyMat.cols(); c++) {
+                double data[] = cannyMat.get(r, c);
+                result[r][c] = data[0];
+            }
+        }
+        AudioPlayer.play(result,1000);
         if (!edgeMode) {
             return mRgba;
         } else {

@@ -1,30 +1,44 @@
 package com.lab.blindsight;
 
-import android.app.ActionBar;
-import android.content.Intent;
-import android.hardware.Camera;
-
-import android.os.Build;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
+import android.graphics.Point;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.Display;
+import android.view.SurfaceView;
 import android.view.View;
 import android.view.Window;
-import android.view.WindowManager;
-import android.widget.FrameLayout;
+import android.widget.CompoundButton;
 import android.widget.ImageButton;
+import android.widget.Switch;
+
+import org.opencv.android.BaseLoaderCallback;
+import org.opencv.android.CameraBridgeViewBase;
+import org.opencv.android.CameraBridgeViewBase.CvCameraViewListener2;
+import org.opencv.android.JavaCameraView;
+import org.opencv.android.LoaderCallbackInterface;
+import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Mat;
+import org.opencv.imgproc.Imgproc;
 
 
-public class Stream extends AppCompatActivity {
+public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
-    private Camera camera;
-    private CameraView cameraView = null;
+    private static final String TAG = "StreamView";
+
+    private CameraBridgeViewBase mOpenCvCameraView;
 
     // Used to load the 'native-lib' library on application startup.
     static {
         System.loadLibrary("native-lib");
     }
+
+    Mat mRgba;
+    Mat cannyMat;
+    Mat mRgbaF;
+    Mat mRgbaT;
+
+    boolean edgeMode = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,26 +48,20 @@ public class Stream extends AppCompatActivity {
 
         View decorView = window.getDecorView();
 
-        int systemStyleFlag = View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
-                View.SYSTEM_UI_FLAG_FULLSCREEN;
+        int systemStyleFlag =
+                View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY |
+                        View.SYSTEM_UI_FLAG_FULLSCREEN;
 
         decorView.setSystemUiVisibility(systemStyleFlag);
 
         setContentView(R.layout.activity_stream);
 
-        // Example of a call to a native method
+        mOpenCvCameraView = (JavaCameraView) findViewById(R.id.OpenCVCam);
 
-        try {
-            this.camera = Camera.open();//you can use open(int) to use different cameras
-        } catch (Exception e) {
-            Log.d("ERROR", "Failed to get camera: " + e.getMessage());
-        }
+        mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
 
-        if (this.camera != null) {
-            this.cameraView = new CameraView(this, this.camera);//create a SurfaceView to show camera data
-            FrameLayout camera_view = (FrameLayout) findViewById(R.id.camera_view);
-            camera_view.addView(this.cameraView);//add the SurfaceView to the layout
-        }
+        mOpenCvCameraView.setCvCameraViewListener(this);
+
         //btn to close the application
         ImageButton imgClose = (ImageButton) findViewById(R.id.imgClose);
         imgClose.setOnClickListener(new View.OnClickListener() {
@@ -63,6 +71,91 @@ public class Stream extends AppCompatActivity {
             }
         });
 
+        Switch switchCvMode = (Switch) findViewById(R.id.switchCvMode);
+        switchCvMode.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton compoundButton, boolean isChecked) {
+                edgeMode = isChecked;
+            }
+        });
+
+    }
+
+    private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
+        @Override
+        public void onManagerConnected(int status) {
+            switch (status) {
+                case LoaderCallbackInterface.SUCCESS: {
+                    Log.i(TAG, "OpenCV loaded successfully");
+                    mOpenCvCameraView.enableView();
+
+                    Display display = getWindowManager().getDefaultDisplay();
+                    Point size = new Point();
+                    display.getSize(size);
+                    int width = size.x;
+                    int height = size.y;
+
+                    mOpenCvCameraView.setMinimumHeight(height);
+                    mOpenCvCameraView.setMinimumWidth(width);
+                }
+                break;
+                default: {
+                    super.onManagerConnected(status);
+                }
+                break;
+            }
+        }
+    };
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
+    }
+
+    public void onDestroy() {
+        super.onDestroy();
+        if (mOpenCvCameraView != null)
+            mOpenCvCameraView.disableView();
+    }
+
+    public void onCameraViewStarted(int width, int height) {
+//        mRgba = new Mat(height, width, CvType.CV_8UC4);
+//        mRgbaF = new Mat(height, width, CvType.CV_8UC4);
+//        mRgbaT = new Mat(width, width, CvType.CV_8UC4);
+    }
+
+    public void onCameraViewStopped() {
+    }
+
+    int threshold1 = 70;
+    int threshold2 = 100;
+
+    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+
+        mRgba = inputFrame.rgba();
+        // Rotate mRgba 90 degrees
+
+        if (cannyMat == null) {
+            cannyMat = new Mat();
+        }
+
+        Imgproc.Canny(mRgba, cannyMat, threshold1, threshold2);
+
+        if (!edgeMode) {
+            return mRgba;
+        } else {
+            return cannyMat;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        OpenCVLoader.initAsync(OpenCVLoader.OPENCV_VERSION_3_1_0, this,
+                mLoaderCallback);
     }
 
     /**

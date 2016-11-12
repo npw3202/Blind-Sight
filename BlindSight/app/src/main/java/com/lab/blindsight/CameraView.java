@@ -61,7 +61,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback {
             Log.d("ERROR", "Camera error on surfaceChanged " + e.getMessage());
         }
     }
-
+    
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
         this.camera.stopPreview();

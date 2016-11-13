@@ -42,7 +42,7 @@ public class AudioPlayer {
 
         short buffer[] = new short[bufsizsamps];
         for (int i = 0; i < bufsizsamps; i++) {
-            buffer[i] = (short) (Short.MAX_VALUE * FourierTransform.evaluate(dataEncoded, t));
+            buffer[i] = (short) (Short.MAX_VALUE * FourierTransform.evaluate(dataEncoded, t, bufsizsamps/dt));
             t += dt;
         }
         return buffer;

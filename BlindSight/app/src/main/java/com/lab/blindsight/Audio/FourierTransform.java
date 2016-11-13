@@ -8,27 +8,27 @@ import java.nio.ByteBuffer;
 import java.util.ArrayList;
 
 public class FourierTransform {
-    static double evaluate(ArrayList<Double> amplitude, ArrayList<Double> frequency, double t){
+    static double evaluate(ArrayList<Double> amplitude, ArrayList<Double> frequency, double t, double length){
         double amplitudeAcc = 0;
         double totalAcc = 0;
         //calculate the sum of sines
         for(int i = 0; i < amplitude.size(); i++){
             amplitudeAcc += amplitude.get(i);
-            totalAcc += amplitude.get(i) * Math.sin(FREQUENCY_CONST/frequency.size() * frequency.get(i) * t);
+            totalAcc += amplitude.get(i) * Math.sin(FREQUENCY_CONST/Math.sqrt(frequency.size()) * frequency.get(i) * t);
         }
         //normalize the sine waves to have an amplitude of LOUD_CONST
-        return LOUD_CONST * totalAcc / amplitudeAcc;
+        return LOUD_CONST * totalAcc / amplitudeAcc; //* 1/(1+10*Math.pow(length/2 - t,2));
     }
-    static double evaluate(ArrayList<Double> amplitude, double t){
+    static double evaluate(ArrayList<Double> amplitude, double t, double length){
         ArrayList<Double> frequency = new ArrayList<>();
         for(int i = 0; i < amplitude.size(); i++){
             frequency.add((double) (i+1)*150/amplitude.size());
         }
-        return evaluate(amplitude, frequency, t);
+        return evaluate(amplitude, frequency, t, length);
     }
 
     static final double LOUD_CONST = 1;
-    static final double FREQUENCY_CONST = 500;
+    static final double FREQUENCY_CONST = 300;
     //This is just an example - you would want to handle LineUnavailable properly...
     /*static void play(double[][] data) throws LineUnavailableException, InterruptedException{
         ArrayList<Double> dataEncoded = HilbertCurve.generateWalk(data);

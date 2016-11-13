@@ -74,7 +74,8 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
         setContentView(R.layout.activity_stream);
         mOpenCvCameraView = (JavaCameraView) findViewById(R.id.OpenCVCam);
-        double[][] t = new double[][]{{1, 1}, {1, 1}};
+        double[][] t = new double[][]{{0,0,128,0}, {128,0,0,0},{0,0,191,0},{0,0,0,0}};
+
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
 
         mOpenCvCameraView.setCvCameraViewListener(this);
@@ -153,7 +154,7 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
     int threshold2 = 100;
 
-    final int cannySize = 128;
+    final int cannySize = 4;
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
@@ -169,12 +170,12 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
 //        Mat processingMat = cannyMat;
 
-        Imgproc.resize(cannyMat, processingMat, new Size(128, 128));
+        Imgproc.resize(cannyMat, processingMat, new Size(cannySize, cannySize));
 
         double result[][] = new double[processingMat.rows()][processingMat.cols()];
 
-        for (int r = 0; r < 128; r++) {
-            for (int c = 0; c < 128; c++) {
+        for (int r = 0; r < cannySize; r++) {
+            for (int c = 0; c < cannySize; c++) {
                 double data[] = processingMat.get(r, c);
                 result[r][c] = data[0];
             }

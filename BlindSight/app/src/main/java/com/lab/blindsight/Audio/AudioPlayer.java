@@ -26,7 +26,7 @@ public class AudioPlayer {
             at.setStereoVolume(1.0f, 1.0f);
             at.write(buffer, 0, bufsizsamps);
             at.play();
-            Thread.sleep(100);
+//            Thread.sleep(100);
         } catch (Exception e) {
             e.printStackTrace();
         }

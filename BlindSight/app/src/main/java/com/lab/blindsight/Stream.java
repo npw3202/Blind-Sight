@@ -2,6 +2,7 @@ package com.lab.blindsight;
 
 import android.graphics.Point;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.Display;
@@ -46,6 +47,8 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
     boolean edgeMode = false;
 
+    private Handler audioHandler;
+
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
@@ -74,7 +77,7 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
         setContentView(R.layout.activity_stream);
         mOpenCvCameraView = (JavaCameraView) findViewById(R.id.OpenCVCam);
-        double[][] t = new double[][]{{0,0,128,0}, {128,0,0,0},{0,0,191,0},{0,0,0,0}};
+        double[][] t = new double[][]{{0, 0, 128, 0}, {128, 0, 0, 0}, {0, 0, 191, 0}, {0, 0, 0, 0}};
 
         mOpenCvCameraView.setVisibility(SurfaceView.VISIBLE);
 
@@ -97,6 +100,9 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
             }
         });
 
+        audioHandler = new Handler();
+
+        startRepeatingTask();
     }
 
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
@@ -137,6 +143,7 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
     public void onDestroy() {
         super.onDestroy();
+        stopRepeatingTask();
         if (mOpenCvCameraView != null)
             mOpenCvCameraView.disableView();
     }
@@ -156,6 +163,33 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
     final int cannySize = 4;
 
+    double result[][];
+
+    // 5 seconds by default, can be changed later
+    private int mInterval = 500;
+
+    Runnable audioThread = new Runnable() {
+        @Override
+        public void run() {
+            try {
+                if (result != null)
+                    AudioPlayer.play(result, 1000);
+            } finally {
+                // 100% guarantee that this always happens, even if
+                // your update method throws an exception
+                audioHandler.postDelayed(audioThread, mInterval);
+            }
+        }
+    };
+
+    void startRepeatingTask() {
+        audioThread.run();
+    }
+
+    void stopRepeatingTask() {
+        audioHandler.removeCallbacks(audioThread);
+    }
+
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
         Mat inputGrayscale = inputFrame.gray();
@@ -172,7 +206,7 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
         Imgproc.resize(cannyMat, processingMat, new Size(cannySize, cannySize));
 
-        double result[][] = new double[processingMat.rows()][processingMat.cols()];
+        result = new double[cannySize][cannySize];
 
         for (int r = 0; r < cannySize; r++) {
             for (int c = 0; c < cannySize; c++) {
@@ -180,8 +214,6 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
                 result[r][c] = data[0];
             }
         }
-
-        AudioPlayer.play(result, 1000);
 
         if (!edgeMode) {
             return inputFrame.rgba();

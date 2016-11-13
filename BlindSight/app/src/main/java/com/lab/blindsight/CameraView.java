@@ -1,19 +1,14 @@
 package com.lab.blindsight;
 
 import android.content.Context;
-
-import android.graphics.ImageFormat;
 import android.hardware.Camera;
-
 import android.util.Log;
 import android.view.SurfaceHolder;
 import android.view.SurfaceView;
-import java.io.IOException;
 
-import org.opencv.android.BaseLoaderCallback;
-import org.opencv.android.CameraBridgeViewBase;
-import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+
+import java.io.IOException;
 
 /**
  * Created by lab on 11/12/16.
@@ -85,7 +80,7 @@ public class CameraView extends SurfaceView implements SurfaceHolder.Callback, C
             Log.d("ERROR", "Camera error on surfaceChanged " + e.getMessage());
         }
     }
-    
+
     @Override
     public void surfaceDestroyed(SurfaceHolder surfaceHolder) {
         camera.setPreviewCallback(null);

@@ -35,13 +35,14 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
         System.loadLibrary("native-lib");
     }
 
+    private Mat cannyMat;
+
     @Override
     protected void onStart() {
         super.onStart();
     }
 
     Mat mRgba;
-    Mat cannyMat;
     Mat mRgbaF;
     Mat mRgbaT;
 
@@ -163,17 +164,30 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
     final int cannySize = 4;
 
-    double result[][];
-
     // 5 seconds by default, can be changed later
-    private int mInterval = 500;
+    private int mInterval = 100;
+
 
     Runnable audioThread = new Runnable() {
         @Override
         public void run() {
             try {
-                if (result != null)
-                    AudioPlayer.play(result, 1000);
+                if (cannyMat != null) {
+                    Mat processingMat = new Mat();
+
+                    Imgproc.resize(cannyMat, processingMat, new Size(cannySize, cannySize));
+
+                    double result[][] = new double[cannySize][cannySize];
+
+                    for (int r = 0; r < cannySize; r++) {
+                        for (int c = 0; c < cannySize; c++) {
+                            double data[] = processingMat.get(r, c);
+                            result[r][c] = data[0];
+                        }
+                    }
+
+                    AudioPlayer.play(result, mInterval);
+                }
             } finally {
                 // 100% guarantee that this always happens, even if
                 // your update method throws an exception
@@ -193,27 +207,12 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 
         Mat inputGrayscale = inputFrame.gray();
+
         // Rotate mRgba 90 degrees
-        if (cannyMat == null) {
+        if (cannyMat == null)
             cannyMat = new Mat();
-        }
 
         Imgproc.Canny(inputGrayscale, cannyMat, threshold1, threshold2);
-
-        Mat processingMat = new Mat();
-
-//        Mat processingMat = cannyMat;
-
-        Imgproc.resize(cannyMat, processingMat, new Size(cannySize, cannySize));
-
-        result = new double[cannySize][cannySize];
-
-        for (int r = 0; r < cannySize; r++) {
-            for (int c = 0; c < cannySize; c++) {
-                double data[] = processingMat.get(r, c);
-                result[r][c] = data[0];
-            }
-        }
 
         if (!edgeMode) {
             return inputFrame.rgba();

@@ -152,11 +152,11 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
     public void onCameraViewStopped() {
     }
 
-    int threshold1 = 70;
+    int threshold1 = 210;
 
-    int threshold2 = 100;
+    int threshold2 = 300;
 
-    final int cannySize = 4;
+    final int cannySize = 8;
 
     public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
 

@@ -13,7 +13,6 @@ import android.widget.CompoundButton;
 import android.widget.ImageButton;
 import android.widget.Switch;
 
-import com.lab.blindsight.Audio.AudioPlayer;
 import com.lab.blindsight.Audio.AudioThread;
 
 import org.opencv.android.BaseLoaderCallback;
@@ -23,7 +22,6 @@ import org.opencv.android.JavaCameraView;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
 import org.opencv.core.Mat;
-import org.opencv.core.Size;
 import org.opencv.imgproc.Imgproc;
 
 public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
@@ -37,29 +35,15 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
     }
 
     AudioThread at = new AudioThread();
+
     @Override
     protected void onStart() {
         super.onStart();
     }
 
-    Mat mRgba;
     Mat cannyMat;
-    Mat mRgbaF;
-    Mat mRgbaT;
 
     boolean edgeMode = false;
-
-    @Override
-    protected void onSaveInstanceState(Bundle outState) {
-        super.onSaveInstanceState(outState);
-        Log.i(TAG, "onSaveInstanceState");
-    }
-
-    @Override
-    protected void onRestoreInstanceState(Bundle savedInstanceState) {
-        super.onRestoreInstanceState(savedInstanceState);
-        Log.i(TAG, "onRestoreInstanceState");
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,25 +152,13 @@ public class Stream extends AppCompatActivity implements CvCameraViewListener2 {
 
         Imgproc.Canny(inputGrayscale, cannyMat, threshold1, threshold2);
 
-        Mat processingMat = new Mat();
-
-//        Mat processingMat = cannyMat;
-
-        Imgproc.resize(cannyMat, processingMat, new Size(cannySize, cannySize));
-
-        double result[][] = new double[processingMat.rows()][processingMat.cols()];
-
-        for (int r = 0; r < cannySize; r++) {
-            for (int c = 0; c < cannySize; c++) {
-                double data[] = processingMat.get(r, c);
-                result[r][c] = data[0];
-            }
-        }
-
-        //AudioPlayer.play(result, 1000);
         Message msg = Message.obtain();
-        msg.obj = result;
+
+        msg.obj = cannyMat;
+        msg.arg1 = cannySize;
+
         at.mHandler.sendMessage(msg);
+
         if (!edgeMode) {
             return inputFrame.rgba();
         } else {
